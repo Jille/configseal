@@ -80,14 +80,12 @@ func main() {
 		if err := os.Chmod(fh.Name(), os.FileMode(h.Mode)); err != nil {
 			log.Fatalf("Failed to chmod(%s, %o): %v", fh.Name(), h.Mode, err)
 		}
-		var writeTo io.Writer = fh
 		if oldfh, err := os.Open(filepath.Join(*target, h.Name)); err == nil { // err == nil
-			writeTo = &comparingWriter{cmp: oldfh, next: fh}
-		}
-		if _, err := io.Copy(writeTo, tr); err != nil {
-			log.Fatalf("Failed to read %s from bundle: %v", h.Name, err)
-		}
-		if cw, ok := writeTo.(*comparingWriter); ok {
+			cw := &comparingWriter{cmp: oldfh, next: fh}
+			if _, err := io.Copy(cw, tr); err != nil {
+				log.Fatalf("Failed to read %s from bundle: %v", h.Name, err)
+			}
+			cw.Finalize()
 			if !cw.changed {
 				if err := fh.Close(); err != nil {
 					log.Fatalf("Failed to write %s: %v", fh.Name(), err)
@@ -96,6 +94,8 @@ func main() {
 				continue
 			}
 			_ = cw.cmp.(*os.File).Close()
+		} else if _, err := io.Copy(fh, tr); err != nil {
+			log.Fatalf("Failed to read %s from bundle: %v", h.Name, err)
 		}
 		_ = os.Chtimes(fh.Name(), h.ModTime, h.ModTime)
 		if err := fh.Sync(); err != nil {
@@ -150,4 +150,15 @@ func (cw *comparingWriter) Write(p []byte) (int, error) {
 		}
 	}
 	return cw.next.Write(p)
+}
+
+func (cw *comparingWriter) Finalize() {
+	if cap(cw.buf) < 1 {
+		cw.buf = make([]byte, 1)
+	}
+	_, err := cw.cmp.Read(cw.buf[:1])
+	if err == io.EOF {
+		return
+	}
+	cw.changed = true
 }
