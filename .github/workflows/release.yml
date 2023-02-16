@@ -24,7 +24,7 @@ jobs:
       env:
         CGO_ENABLED: 0
         GOARCH: amd64
-    - run: tar cvf ../_publish/configseal-linux-arm64.tar *
+    - run: tar cvf ../_publish/configseal-linux-amd64.tar *
       working-directory: tmp
     - run: rm -f tmp/*
 
