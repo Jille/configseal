@@ -69,6 +69,9 @@ func main() {
 			}
 			log.Fatalf("Failed to read tar from bundle: %v", err)
 		}
+		if h.Typeflag != tar.TypeReg {
+			continue
+		}
 		fh, err := os.Create(filepath.Join(*target, h.Name+".tmp"))
 		if err != nil {
 			log.Fatalf("Failed to read %s from bundle: %v", h.Name, err)
