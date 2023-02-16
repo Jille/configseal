@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+
+    - run: mkdir _publish tmp
+
+    - name: Build for linux/amd64
+      run: go build -v -o tmp/ ./cmd/...
+      env:
+        CGO_ENABLED: 0
+        GOARCH: amd64
+    - run: tar cf ../_publish/configseal-linux-arm64.tar *
+      working-directory: tmp
+    - run: rm -f tmp/*
+
+    - name: Build for linux/arm64
+      run: go build -v -o tmp/ ./cmd/...
+      env:
+        CGO_ENABLED: 0
+        GOARCH: arm64
+    - run: tar cf ../_publish/configseal-linux-arm64.tar *
+      working-directory: tmp
+    - run: rm -f tmp/*
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: _publish/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
