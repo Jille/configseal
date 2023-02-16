@@ -24,7 +24,7 @@ func main() {
 		log.Fatal("Usage: configseal-bundle -k keyfile -o bundle.out myfile1 myfile2 ...")
 	}
 
-	cmd := exec.Command("tar", append([]string{"cLf", "-"}, pflag.Args()...)...)
+	cmd := exec.Command("tar", append([]string{"--dereference", "-cf", "-", "--"}, pflag.Args()...)...)
 	cmd.Stderr = os.Stderr
 	data, err := cmd.Output()
 	if err != nil {
