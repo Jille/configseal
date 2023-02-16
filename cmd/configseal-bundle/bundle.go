@@ -15,6 +15,7 @@ import (
 var (
 	keyfile = pflag.StringP("keyfile", "k", "", "Path to file containing the decryption password")
 	outfile = pflag.StringP("outfile", "o", "", "Path to output bundle file")
+	chdir = pflag.StringP("chdir", "C", ".", "Base directory of the given files")
 )
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 		log.Fatal("Usage: configseal-bundle -k keyfile -o bundle.out myfile1 myfile2 ...")
 	}
 
-	cmd := exec.Command("tar", append([]string{"--dereference", "-cf", "-", "--"}, pflag.Args()...)...)
+	cmd := exec.Command("tar", append([]string{"--dereference", "-cf", "-", "-C", *chdir, "--"}, pflag.Args()...)...)
 	cmd.Stderr = os.Stderr
 	data, err := cmd.Output()
 	if err != nil {
