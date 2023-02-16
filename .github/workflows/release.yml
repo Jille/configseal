@@ -9,6 +9,8 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v3
 
@@ -22,7 +24,7 @@ jobs:
       env:
         CGO_ENABLED: 0
         GOARCH: amd64
-    - run: tar cf ../_publish/configseal-linux-arm64.tar *
+    - run: tar cvf ../_publish/configseal-linux-arm64.tar *
       working-directory: tmp
     - run: rm -f tmp/*
 
@@ -31,7 +33,7 @@ jobs:
       env:
         CGO_ENABLED: 0
         GOARCH: arm64
-    - run: tar cf ../_publish/configseal-linux-arm64.tar *
+    - run: tar cvf ../_publish/configseal-linux-arm64.tar *
       working-directory: tmp
     - run: rm -f tmp/*
 
